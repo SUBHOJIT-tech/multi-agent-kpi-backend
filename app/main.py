@@ -8,7 +8,7 @@ app = FastAPI(
     version="1.0"
 )
 
-# CORS middleware
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -17,7 +17,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include API routes
+# Routes
 app.include_router(router)
 
 @app.get("/")
