@@ -7,35 +7,42 @@ router = APIRouter()
 @router.post("/analyze")
 async def analyze_kpi(file: UploadFile = File(...)):
     try:
-        # Read CSV safely
-        contents = await file.read()
-        df = pd.read_csv(io.StringIO(contents.decode("utf-8")))
+        # Read raw bytes
+        raw = await file.read()
 
-        # Simple demo KPI logic (robust)
-        results = []
+        # Try decoding safely
+        try:
+            content = raw.decode("utf-8")
+        except UnicodeDecodeError:
+            content = raw.decode("latin-1")
 
-        results.append({
-            "agent": "Performance Agent",
-            "metric": "Row Count",
-            "value": len(df)
-        })
+        # Load CSV
+        df = pd.read_csv(io.StringIO(content))
 
-        results.append({
-            "agent": "Risk Agent",
-            "metric": "Column Count",
-            "value": len(df.columns)
-        })
-
-        results.append({
-            "agent": "Recommendation Agent",
-            "metric": "Missing Values",
-            "value": int(df.isna().sum().sum())
-        })
+        # Simple, safe KPI outputs (numeric)
+        results = [
+            {
+                "agent": "Performance Agent",
+                "metric": "Row Count",
+                "value": int(len(df)),
+            },
+            {
+                "agent": "Risk Agent",
+                "metric": "Column Count",
+                "value": int(len(df.columns)),
+            },
+            {
+                "agent": "Recommendation Agent",
+                "metric": "Missing Values",
+                "value": int(df.isna().sum().sum()),
+            },
+        ]
 
         return {"results": results}
 
     except Exception as e:
-        # Explicit error so frontend doesn't hang
+        # Log exact error to Render logs
+        print("ANALYZE ERROR:", str(e))
         raise HTTPException(
             status_code=500,
             detail=f"Analysis failed: {str(e)}"
