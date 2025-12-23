@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from app.api.routes import router
 from fastapi.middleware.cors import CORSMiddleware
+from app.api.routes import router
 
 app = FastAPI(
     title="Multi-Agent KPI Analysis Platform",
@@ -8,11 +8,7 @@ app = FastAPI(
     version="1.0"
 )
 
-app.include_router(router)
-
-@app.get("/")
-def root():
-    return {"status": "Backend running successfully"}
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,3 +16,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include API routes
+app.include_router(router)
+
+@app.get("/")
+def root():
+    return {"status": "Backend running successfully"}
